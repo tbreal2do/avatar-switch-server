@@ -1,0 +1,27 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:                     # 允许在 GitHub 网页手动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "❌ RENDER_DEPLOY_HOOK 未配置"
+            echo "   Settings → Secrets and variables → Actions → New repository secret"
+            echo "   Name:  RENDER_DEPLOY_HOOK"
+            echo "   Value: Render Dashboard → Service → Settings → Deploy Hook URL"
+            exit 1
+          fi
+          echo "🚀 触发 Render 部署..."
+          curl -sS -X POST "$HOOK"
+          echo ""
+          echo "✅ 已触发，约 30-90 秒后生效"
+          echo "   状态：https://dashboard.render.com"
